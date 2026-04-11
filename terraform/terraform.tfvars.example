@@ -1,0 +1,44 @@
+# ============================================================
+# terraform.tfvars.example — Example values for each client
+# ============================================================
+# IMPORTANT:
+#   Copy this file to terraform.tfvars and fill in real values.
+#   terraform.tfvars is listed in .gitignore — it NEVER goes
+#   to GitHub because it contains your actual API key.
+#
+#   This .example file IS safe to commit — it shows the
+#   structure without any real secrets.
+# ============================================================
+
+
+# ---- FOR QUEENSLAND RAIL ----
+client_name       = "qrail"
+environment       = "production"
+location          = "australiaeast"
+owner_name        = "Jeff Thornton"
+node_vm_size      = "Standard_D4s_v3"
+replica_count     = 3
+alert_email       = "jeff@jeffreythornton.com"
+anthropic_api_key = "sk-ant-YOUR-KEY-HERE"   # never commit real key!
+
+
+# ---- FOR US ENERGY CLIENT ----
+# client_name       = "usenergy"
+# environment       = "production"
+# location          = "eastus"
+# owner_name        = "Jeff Thornton"
+# node_vm_size      = "Standard_D4s_v3"
+# replica_count     = 5
+# alert_email       = "jeff@jeffreythornton.com"
+# anthropic_api_key = "sk-ant-YOUR-KEY-HERE"
+
+
+# ---- FOR LOCAL DEV / DEMO ----
+# client_name       = "demo"
+# environment       = "dev"
+# location          = "eastus"
+# owner_name        = "Jeff Thornton"
+# node_vm_size      = "Standard_D2s_v3"
+# replica_count     = 1
+# alert_email       = "jeff@jeffreythornton.com"
+# anthropic_api_key = "sk-ant-YOUR-KEY-HERE"

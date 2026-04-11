@@ -1,0 +1,39 @@
+# ============================================================
+# .gitignore — Files that NEVER go to GitHub
+# ============================================================
+# CRITICAL RULE: Never commit secrets or state files to GitHub.
+# This file tells Git to ignore them automatically.
+# ============================================================
+
+# ---- SECRETS — never commit these ----
+# terraform.tfvars contains your real API key
+terraform.tfvars
+*.tfvars
+!*.tfvars.example     # .example files ARE safe to commit
+
+# ---- TERRAFORM STATE — never commit these ----
+# The state file tracks what Terraform built.
+# It can contain sensitive values in plain text.
+# Use remote state (Azure Blob) for team collaboration.
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+
+# ---- TERRAFORM WORKING DIRECTORY ----
+# Downloaded providers and modules — large binary files
+.terraform/
+.terraform.lock.hcl
+
+# ---- CRASH LOGS ----
+crash.log
+crash.*.log
+
+# ---- OVERRIDE FILES ----
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# ---- PLAN FILES ----
+# terraform plan output — may contain sensitive values
+*.tfplan
