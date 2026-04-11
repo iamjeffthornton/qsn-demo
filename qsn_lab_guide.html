@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QSN Live Demo Lab Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e1117;
+  --bg2: #161b25;
+  --bg3: #1e2535;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.14);
+  --text: #dde3f0;
+  --muted: #5d6b85;
+  --accent: #4ade80;
+  --accent2: #22c55e;
+  --blue: #60a5fa;
+  --orange: #fb923c;
+  --purple: #c084fc;
+  --yellow: #facc15;
+  --red: #f87171;
+  --teal: #2dd4bf;
+  --term-bg: #080c12;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
+/* HEADER */
+.hero {
+  background: linear-gradient(160deg, #0f1923 0%, #0e1117 60%);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 24px 22px;
+}
+.hero-tag { font-size: 10px; font-weight: 600; letter-spacing: 0.16em; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+.hero h1 { font-size: 26px; font-weight: 600; line-height: 1.2; margin-bottom: 6px; }
+.hero h1 span { color: var(--accent); }
+.hero-sub { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+.hero-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+.chip { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; border: 1px solid; }
+.chip-g { color: var(--accent); border-color: rgba(74,222,128,.3); background: rgba(74,222,128,.06); }
+.chip-b { color: var(--blue); border-color: rgba(96,165,250,.3); background: rgba(96,165,250,.06); }
+.chip-o { color: var(--orange); border-color: rgba(251,146,60,.3); background: rgba(251,146,60,.06); }
+.chip-p { color: var(--purple); border-color: rgba(192,132,252,.3); background: rgba(192,132,252,.06); }
+
+/* PROGRESS BAR */
+.progress-bar-wrap {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 12px 24px; display: flex; align-items: center; gap: 14px;
+}
+.progress-label { font-size: 11px; color: var(--muted); min-width: 90px; font-family: 'IBM Plex Mono', monospace; }
+.progress-track { flex: 1; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; }
+.progress-fill { height: 4px; background: var(--accent); border-radius: 2px; transition: width .5s ease; }
+.progress-pct { font-size: 11px; color: var(--accent); font-family: 'IBM Plex Mono', monospace; min-width: 36px; text-align: right; }
+
+/* LAYOUT */
+.layout { display: flex; min-height: calc(100vh - 160px); }
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px; flex-shrink: 0; background: var(--bg2);
+  border-right: 1px solid var(--border); padding: 16px 0;
+  position: sticky; top: 0; height: calc(100vh - 160px); overflow-y: auto;
+}
+.sidebar-section { padding: 0 12px; margin-bottom: 6px; }
+.sidebar-label { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 8px 8px 4px; }
+.slink {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 8px; border-radius: 7px; cursor: pointer;
+  font-size: 12px; color: var(--muted); transition: all .15s;
+  margin-bottom: 1px; border: 1px solid transparent;
+}
+.slink:hover { background: rgba(255,255,255,.04); color: var(--text); }
+.slink.active { background: rgba(74,222,128,.08); color: var(--accent); border-color: rgba(74,222,128,.18); }
+.slink.done { color: var(--muted); }
+.slink.done .slink-num { background: var(--accent2); color: #000; }
+.slink-num {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;
+  background: rgba(255,255,255,.07); color: var(--muted);
+}
+.slink.active .slink-num { background: var(--accent); color: #000; }
+
+/* MAIN CONTENT */
+.main { flex: 1; padding: 0; overflow-y: auto; }
+
+/* STEP */
+.step { display: none; padding: 24px; max-width: 820px; }
+.step.active { display: block; }
+
+.step-header { margin-bottom: 20px; }
+.step-eyebrow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.step-num-big {
+  width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;
+}
+.step-track-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+.step-title { font-size: 22px; font-weight: 600; line-height: 1.25; margin-bottom: 6px; }
+.step-desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+/* ANALOGY BOX */
+.analogy {
+  background: rgba(74,222,128,.05); border: 1px solid rgba(74,222,128,.18);
+  border-radius: 10px; padding: 14px 16px; margin: 16px 0;
+  font-size: 13px; line-height: 1.7;
+}
+.analogy-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+
+/* SUBSTEP */
+.substep { margin: 14px 0; }
+.substep-header {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-bottom: 8px; cursor: pointer; padding: 10px 12px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; transition: all .15s;
+}
+.substep-header:hover { border-color: var(--border2); }
+.substep-header.open { border-color: var(--border2); border-radius: 8px 8px 0 0; }
+.ss-num {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600;
+  color: var(--accent); background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.2);
+  border-radius: 4px; padding: 2px 6px; margin-top: 1px; flex-shrink: 0;
+}
+.ss-title { font-size: 13px; font-weight: 500; flex: 1; }
+.ss-arrow { color: var(--muted); font-size: 12px; transition: transform .2s; margin-top: 2px; }
+.substep-header.open .ss-arrow { transform: rotate(90deg); }
+.substep-body {
+  display: none; background: var(--bg2); border: 1px solid var(--border2); border-top: none;
+  border-radius: 0 0 8px 8px; padding: 12px 16px;
+}
+.substep-body.open { display: block; }
+.substep-explain { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 10px; }
+.substep-explain strong { color: var(--text); }
+
+/* TERMINAL */
+.terminal {
+  background: var(--term-bg); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px; margin: 10px 0; overflow: hidden;
+}
+.terminal-bar {
+  background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 7px 12px; display: flex; align-items: center; gap: 8px;
+}
+.term-dots { display: flex; gap: 5px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+.term-label { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; flex: 1; text-align: center; }
+.copy-btn {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted); background: rgba(255,255,255,.05); border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 8px; cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+  transition: all .15s;
+}
+.copy-btn:hover { color: var(--text); border-color: var(--border2); }
+.copy-btn.copied { color: var(--accent); border-color: rgba(74,222,128,.3); }
+.terminal-code {
+  padding: 14px 16px; font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; line-height: 1.8; overflow-x: auto; white-space: pre;
+}
+.c-cm { color: #3d5066; }
+.c-kw { color: var(--purple); }
+.c-str { color: var(--accent); }
+.c-cmd { color: var(--blue); }
+.c-out { color: #5d6b85; }
+.c-hi  { color: var(--yellow); }
+.c-ok  { color: var(--accent); }
+.c-err { color: var(--red); }
+
+/* WHAT TO EXPECT BOX */
+.expect-box {
+  background: rgba(96,165,250,.05); border: 1px solid rgba(96,165,250,.18);
+  border-radius: 8px; padding: 12px 14px; margin: 10px 0; font-size: 12px; line-height: 1.7;
+}
+.expect-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue); margin-bottom: 6px; }
+
+/* CHECKPOINT */
+.checkpoint {
+  background: rgba(251,146,60,.05); border: 1px solid rgba(251,146,60,.2);
+  border-radius: 8px; padding: 12px 14px; margin: 16px 0;
+}
+.checkpoint-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); margin-bottom: 6px; }
+.checkpoint ul { list-style: none; }
+.checkpoint li { font-size: 12px; color: var(--muted); padding: 3px 0; padding-left: 14px; position: relative; }
+.checkpoint li::before { content: '›'; position: absolute; left: 0; color: var(--orange); }
+.checkpoint li strong { color: var(--text); }
+
+/* INTERVIEW TIP */
+.itip {
+  background: rgba(192,132,252,.05); border: 1px solid rgba(192,132,252,.2);
+  border-radius: 8px; padding: 12px 14px; margin: 16px 0;
+}
+.itip-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple); margin-bottom: 6px; }
+.itip p { font-size: 12px; color: var(--muted); line-height: 1.7; }
+.itip strong { color: var(--text); }
+
+/* NAV BUTTONS */
+.step-nav { display: flex; gap: 10px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
+.nav-btn-prev {
+  padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--muted);
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s;
+}
+.nav-btn-prev:hover { color: var(--text); border-color: var(--border2); }
+.nav-btn-next {
+  padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  background: var(--accent); border: none; color: #000;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s;
+}
+.nav-btn-next:hover { background: var(--accent2); }
+
+.section-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* TOOL CARD */
+.tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 14px 0; }
+.tool-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; transition: border-color .15s;
+}
+.tool-card:hover { border-color: var(--border2); }
+.tool-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.tool-desc { font-size: 11px; color: var(--muted); line-height: 1.55; margin-bottom: 8px; }
+.tool-install { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); background: rgba(74,222,128,.07); border: 1px solid rgba(74,222,128,.15); border-radius: 4px; padding: 3px 8px; display: inline-block; }
+
+/* FILE TREE */
+.file-tree {
+  background: var(--term-bg); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 8px; padding: 14px 16px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; line-height: 1.9;
+}
+.ft-dir { color: var(--blue); }
+.ft-file { color: var(--text); }
+.ft-comment { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Live Demo Lab Guide</div>
+  <h1>From <span>Laptop → Docker → Kubernetes</span></h1>
+  <div class="hero-sub">Step-by-step: build your QSN LangGraph agent, containerize it, and run it on a local K8s cluster</div>
+  <div class="hero-chips">
+    <span class="chip chip-g">LangGraph Live</span>
+    <span class="chip chip-b">Docker Desktop</span>
+    <span class="chip chip-o">k3d Kubernetes</span>
+    <span class="chip chip-p">GitHub Actions CI/CD</span>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label" id="prog-label">Step 1 of 6</span>
+  <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:16%"></div></div>
+  <span class="progress-pct" id="prog-pct">16%</span>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-label">Lab Steps</div>
+  <div class="sidebar-section">
+    <div class="slink active" id="sl-0" onclick="goStep(0)">
+      <span class="slink-num">1</span> Setup & Project
+    </div>
+    <div class="slink" id="sl-1" onclick="goStep(1)">
+      <span class="slink-num">2</span> LangGraph Live
+    </div>
+    <div class="slink" id="sl-2" onclick="goStep(2)">
+      <span class="slink-num">3</span> Docker
+    </div>
+    <div class="slink" id="sl-3" onclick="goStep(3)">
+      <span class="slink-num">4</span> Kubernetes
+    </div>
+    <div class="slink" id="sl-4" onclick="goStep(4)">
+      <span class="slink-num">5</span> CI/CD Pipeline
+    </div>
+    <div class="slink" id="sl-5" onclick="goStep(5)">
+      <span class="slink-num">6</span> Interview Ready
+    </div>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ================================================ STEP 0: SETUP ================================================ -->
+<div class="step active" id="step-0">
+  <div class="step-header">
+    <div class="step-eyebrow">
+      <div class="step-num-big" style="background:rgba(74,222,128,.12);color:var(--accent)">1</div>
+      <span class="step-track-label" style="color:var(--accent)">Foundation</span>
+    </div>
+    <div class="step-title">Install everything you need</div>
+    <div class="step-desc">Before writing a single line of code, get all 6 tools installed. This takes about 20 minutes total. Every tool here is used in the Accenture role.</div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-title">Think of it like gearing up for a rugby match</div>
+    Before you can play, you need studs, a gumshield, and a jersey. Before you can deploy AI agents, you need Python, Docker, and kubectl. Do the gear check first — everything else builds on top of it.
+  </div>
+
+  <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Install in this order — each tool depends on the ones before it.</p>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <div class="tool-name">Python 3.11+</div>
+      <div class="tool-desc">Your agent code runs in Python. LangGraph, Anthropic SDK — all Python packages.</div>
+      <span class="tool-install">python --version</span>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">VS Code</div>
+      <div class="tool-desc">Code editor. Install the Python + Docker extensions. Shows errors as you type.</div>
+      <span class="tool-install">code.visualstudio.com</span>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">Docker Desktop</div>
+      <div class="tool-desc">Runs Docker and gives you a GUI to see containers. Required for k3d.</div>
+      <span class="tool-install">docker.com/get-started</span>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">k3d</div>
+      <div class="tool-desc">Creates a local Kubernetes cluster inside Docker. Fastest way to learn K8s.</div>
+      <span class="tool-install">k3d.io</span>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">kubectl</div>
+      <div class="tool-desc">The command-line tool to control Kubernetes. Like a TV remote for your cluster.</div>
+      <span class="tool-install">kubectl.io</span>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">Git</div>
+      <div class="tool-desc">Version control and GitHub. Your CI/CD pipeline triggers on git push.</div>
+      <span class="tool-install">git --version</span>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header open" onclick="toggleSS(this)">
+      <span class="ss-num">1A</span>
+      <span class="ss-title">Verify Python is installed</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body open">
+      <p class="substep-explain">Open your terminal (Mac: press Cmd+Space, type Terminal. Windows: search PowerShell). Run this:</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'python3 --version')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">python3 --version</span>
+
+<span class="c-cm"># You should see something like:</span>
+<span class="c-ok">Python 3.11.8</span>
+
+<span class="c-cm"># If you see 3.8 or older, download 3.11 from python.org</span>
+<span class="c-cm"># If you see "command not found", install Python from python.org</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">1B</span>
+      <span class="ss-title">Install Docker Desktop (most important tool)</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">Go to <strong>docker.com/get-started</strong> and download Docker Desktop for your OS (Mac or Windows). Install it like any app. After install, open Docker Desktop and wait for the whale icon to stop animating — that means Docker is running.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal — verify Docker</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'docker --version && docker run hello-world')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">docker --version</span>
+<span class="c-ok">Docker version 25.0.3</span>
+
+<span class="c-cmd">docker run hello-world</span>
+<span class="c-cm"># Docker downloads a tiny test image and runs it</span>
+<span class="c-ok">Hello from Docker!</span>
+<span class="c-ok">This message shows Docker is working correctly.</span></div>
+      </div>
+      <div class="expect-box">
+        <div class="expect-title">What you'll see</div>
+        Docker downloads a tiny test image, runs it, prints "Hello from Docker!" and exits. If you see that message — Docker is working. You're ready for the next step.
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">1C</span>
+      <span class="ss-title">Install k3d and kubectl (your local Kubernetes)</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">k3d creates a full Kubernetes cluster inside Docker containers on your laptop. kubectl is the tool you use to control it. Think of k3d as "Kubernetes in a box."</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Mac — Terminal</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'brew install k3d kubectl')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cm"># If you have Homebrew (brew.sh):</span>
+<span class="c-cmd">brew install k3d kubectl</span>
+
+<span class="c-cm"># Verify both installed:</span>
+<span class="c-cmd">k3d version</span>
+<span class="c-ok">k3d version v5.6.0</span>
+
+<span class="c-cmd">kubectl version --client</span>
+<span class="c-ok">Client Version: v1.28.4</span></div>
+      </div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Windows — PowerShell (run as Admin)</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'winget install k3d\nwinget install kubectl')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">winget install k3d</span>
+<span class="c-cmd">winget install kubectl</span>
+
+<span class="c-cm"># Or use Chocolatey:</span>
+<span class="c-cmd">choco install k3d kubernetes-cli</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">1D</span>
+      <span class="ss-title">Set up your project folder</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">Create a clean project folder and get your API key set up. The API key is how Claude knows you're allowed to call it.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'mkdir qsn-demo && cd qsn-demo')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cm"># Create project folder</span>
+<span class="c-cmd">mkdir qsn-demo && cd qsn-demo</span>
+
+<span class="c-cm"># Set your Anthropic API key (get it from console.anthropic.com)</span>
+<span class="c-cm"># Mac / Linux:</span>
+<span class="c-cmd">export ANTHROPIC_API_KEY="sk-ant-api03-YOUR-KEY-HERE"</span>
+
+<span class="c-cm"># Windows PowerShell:</span>
+<span class="c-cmd">$env:ANTHROPIC_API_KEY = "sk-ant-api03-YOUR-KEY-HERE"</span>
+
+<span class="c-cm"># Create Python virtual environment (keeps packages isolated)</span>
+<span class="c-cmd">python3 -m venv venv</span>
+<span class="c-cmd">source venv/bin/activate</span>          <span class="c-cm"># Mac/Linux</span>
+<span class="c-cmd">.\venv\Scripts\Activate.ps1</span>       <span class="c-cm"># Windows</span>
+
+<span class="c-cm"># Install LangGraph and Anthropic SDK</span>
+<span class="c-cmd">pip install langgraph anthropic langchain-anthropic</span>
+<span class="c-ok">Successfully installed langgraph-0.2.x anthropic-0.30.x</span></div>
+      </div>
+      <div class="expect-box">
+        <div class="expect-title">Get your Anthropic API key</div>
+        Go to <strong>console.anthropic.com</strong> → API Keys → Create Key. Copy it. It starts with "sk-ant-". This is the credential your agent uses to call Claude. Keep it secret — never commit it to GitHub.
+      </div>
+    </div>
+  </div>
+
+  <div class="checkpoint">
+    <div class="checkpoint-title">Step 1 Checkpoint — before moving on</div>
+    <ul>
+      <li><strong>python3 --version</strong> shows 3.11 or higher</li>
+      <li><strong>docker run hello-world</strong> prints "Hello from Docker!"</li>
+      <li><strong>k3d version</strong> shows a version number</li>
+      <li><strong>kubectl version --client</strong> shows a version number</li>
+      <li>Your ANTHROPIC_API_KEY is set in your terminal</li>
+    </ul>
+  </div>
+
+  <div class="step-nav">
+    <button class="nav-btn-next" onclick="goStep(1)">Next: LangGraph Live Demo →</button>
+  </div>
+</div>
+
+<!-- ================================================ STEP 1: LANGGRAPH ================================================ -->
+<div class="step" id="step-1">
+  <div class="step-header">
+    <div class="step-eyebrow">
+      <div class="step-num-big" style="background:rgba(96,165,250,.12);color:var(--blue)">2</div>
+      <span class="step-track-label" style="color:var(--blue)">LangGraph</span>
+    </div>
+    <div class="step-title">Run your live LangGraph agent</div>
+    <div class="step-desc">Copy the agent files, run the pipeline, and watch 5 agents work in sequence with real Claude API calls.</div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-title">What's happening under the hood</div>
+    When you type "python qsn_agent.py", LangGraph wakes up your 5-agent assembly line. It fires Router first, waits for the answer, passes the updated notebook to Analyst, and so on down the chain. Every agent calls the real Claude API and you pay only for the tokens used.
+  </div>
+
+  <div class="substep">
+    <div class="substep-header open" onclick="toggleSS(this)">
+      <span class="ss-num">2A</span>
+      <span class="ss-title">Copy the agent files into your project folder</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body open">
+      <p class="substep-explain">Your project folder should look exactly like this. The files were created alongside this guide — copy them in now.</p>
+      <div class="file-tree"><span class="ft-dir">qsn-demo/</span>
+├── <span class="ft-file">qsn_agent.py</span>         <span class="ft-comment">← the main agent (5 nodes + graph)</span>
+├── <span class="ft-file">requirements.txt</span>     <span class="ft-comment">← Python packages needed</span>
+├── <span class="ft-file">Dockerfile</span>           <span class="ft-comment">← recipe to containerize your agent</span>
+├── <span class="ft-file">docker-compose.yml</span>   <span class="ft-comment">← run with one command locally</span>
+└── <span class="ft-dir">k8s/</span>
+    ├── <span class="ft-file">deployment.yaml</span>  <span class="ft-comment">← K8s: run 3 replicas of the agent</span>
+    └── <span class="ft-file">service.yaml</span>     <span class="ft-comment">← K8s: expose agent to traffic</span></div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">2B</span>
+      <span class="ss-title">Run the agent for the first time</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">Make sure your API key is set, then run the agent. You'll see each agent fire in sequence, printing its output as it goes.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal — inside qsn-demo/</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'python qsn_agent.py')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">python qsn_agent.py</span>
+
+<span class="c-ok">══════════════════════════════════════════════════════════════</span>
+<span class="c-ok">  🏉  QSN RUGBY CONTENT FACTORY  —  LANGGRAPH LIVE DEMO</span>
+<span class="c-ok">══════════════════════════════════════════════════════════════</span>
+
+<span class="c-hi">📋  Game: USA Eagles vs Canada Maple Leafs...</span>
+
+<span class="c-ok">🏉  [1/5] ROUTER AGENT — deciding content type...</span>
+<span class="c-out">   → Content type: PLAYER_SPOTLIGHT  (142 tokens, 380ms)</span>
+
+<span class="c-ok">📊  [2/5] ANALYST AGENT — breaking down the game...</span>
+<span class="c-out">   → Analysis written  (289 tokens, 720ms)</span>
+<span class="c-out">   Preview: Marcus Tupuola put on an absolute CLINIC today...</span>
+
+<span class="c-ok">✏️   [3/5] TITLE AGENT — writing the YouTube title...</span>
+<span class="c-out">   → Title: He Scored a HAT-TRICK and Canada Had No Answer | USA 38-14</span>
+
+<span class="c-ok">📝  [4/5] DESCRIPTION AGENT — writing the video description...</span>
+<span class="c-ok">🖼️   [5/5] THUMBNAIL AGENT — designing the visual concept...</span>
+
+<span class="c-ok">✅  CONTENT PACKAGE COMPLETE</span>
+<span class="c-out">⚡  TOTAL TIME: 4,821ms  |  TOTAL TOKENS: 1,247</span></div>
+      </div>
+      <div class="expect-box">
+        <div class="expect-title">What you're seeing — agent by agent</div>
+        Each numbered line is one agent firing. The ms number is how long that agent's Claude call took. The tokens number is how many tokens were used. At the end you see your full content package: title, description, thumbnail concept. <strong>That is LangGraph working.</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">2C</span>
+      <span class="ss-title">Try it with your own game</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">Pass any rugby game as a custom input using the --game flag. The agents will adapt their output automatically based on what you give them.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCmd(this, `python qsn_agent.py --game "All Blacks 45-12 Wallabies. Richie Mo'unga scored 25 points from the boot. New Zealand dominant in all phases."`)">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">python qsn_agent.py --game "All Blacks 45-12 Wallabies. \
+  Richie Mo'unga scored 25 points from the boot. \
+  New Zealand dominant in all phases."</span>
+
+<span class="c-cm"># The Router will choose "analysis" or "player_spotlight"</span>
+<span class="c-cm"># based on the game description — watch which one it picks!</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="itip">
+    <div class="itip-title">Interview power move</div>
+    <p>In the interview, say: <strong>"I built a live 5-agent LangGraph pipeline that produces a complete YouTube content package from a single game description input. Each agent has one job, they share a typed State object, and the Router uses conditional edges to classify content type before passing to the analyst chain. I can walk you through the code right now."</strong> Then pull up your laptop and show it running.</p>
+  </div>
+
+  <div class="step-nav">
+    <button class="nav-btn-prev" onclick="goStep(0)">← Back</button>
+    <button class="nav-btn-next" onclick="goStep(2)">Next: Containerize with Docker →</button>
+  </div>
+</div>
+
+<!-- ================================================ STEP 2: DOCKER ================================================ -->
+<div class="step" id="step-2">
+  <div class="step-header">
+    <div class="step-eyebrow">
+      <div class="step-num-big" style="background:rgba(251,146,60,.12);color:var(--orange)">3</div>
+      <span class="step-track-label" style="color:var(--orange)">Docker</span>
+    </div>
+    <div class="step-title">Package your agent in a Docker container</div>
+    <div class="step-desc">Turn your Python script into a portable, self-contained container that runs identically on your laptop, Azure, or any cloud.</div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-title">Why this matters for the interview</div>
+    Right now your agent only works on your laptop, in your virtual environment, with your Python version. Docker packages your code AND its entire environment into one box. That box runs anywhere. Accenture deploys agents for dozens of clients — Docker is how they ensure "it works on my machine" becomes "it works everywhere."
+  </div>
+
+  <div class="substep">
+    <div class="substep-header open" onclick="toggleSS(this)">
+      <span class="ss-num">3A</span>
+      <span class="ss-title">Build your Docker image</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body open">
+      <p class="substep-explain">The Dockerfile in your project folder is already written. This command reads it and builds your image. It will take about 2-3 minutes the first time (downloading base Python image). Subsequent builds are much faster because Docker caches layers.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal — inside qsn-demo/</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'docker build -t qsn-agent:1.0 .')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">docker build -t qsn-agent:1.0 .</span>
+
+<span class="c-cm">#  -t qsn-agent:1.0  = name it "qsn-agent" version "1.0"</span>
+<span class="c-cm">#  .                 = use the Dockerfile in this folder</span>
+
+<span class="c-out">Step 1/9 : FROM python:3.11-slim AS builder</span>
+<span class="c-out"> ---> Pulling from library/python</span>
+<span class="c-out">Step 2/9 : WORKDIR /build</span>
+<span class="c-out">Step 3/9 : COPY requirements.txt .</span>
+<span class="c-out">Step 4/9 : RUN pip install --no-cache-dir...</span>
+<span class="c-out">  Installing collected packages: langgraph, anthropic...</span>
+<span class="c-out">Step 5/9 : FROM python:3.11-slim AS runtime</span>
+<span class="c-out">Step 6/9 : COPY --from=builder /install /usr/local</span>
+<span class="c-out">Step 7/9 : COPY qsn_agent.py .</span>
+<span class="c-out">Step 8/9 : RUN useradd qsnuser</span>
+<span class="c-out">Step 9/9 : CMD ["python", "qsn_agent.py", "--health"]</span>
+<span class="c-ok">Successfully built a3f4b8c9d2e1</span>
+<span class="c-ok">Successfully tagged qsn-agent:1.0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">3B</span>
+      <span class="ss-title">Run your agent inside Docker</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">This runs your agent inside a container. The -e flag injects your API key as an environment variable — exactly how Kubernetes will do it in production.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'docker run -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY qsn-agent:1.0')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">docker run \
+  -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+  qsn-agent:1.0</span>
+
+<span class="c-cm"># Same output as running python directly — but now it's in Docker!</span>
+<span class="c-ok">💚  Health check server running on :8080/health</span>
+<span class="c-ok">🏉  QSN RUGBY CONTENT FACTORY  —  LANGGRAPH LIVE DEMO</span>
+<span class="c-out">🏉  [1/5] ROUTER AGENT — deciding content type...</span></div>
+      </div>
+      <p class="substep-explain" style="margin-top:10px"><strong>The moment it works inside Docker:</strong> You've just proven your agent is portable. That same command works on any server in the world that has Docker installed.</p>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">3C</span>
+      <span class="ss-title">Essential Docker commands you must own</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">These 10 commands cover 90% of everything you'll do with Docker. Practice them until they're automatic.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Docker Cheat Sheet</span>
+        </div>
+        <div class="terminal-code"><span class="c-cm"># BUILD — create an image from a Dockerfile</span>
+<span class="c-cmd">docker build -t myapp:v1 .</span>
+
+<span class="c-cm"># RUN — start a container from an image</span>
+<span class="c-cmd">docker run myapp:v1</span>
+<span class="c-cmd">docker run -d myapp:v1</span>                   <span class="c-cm"># -d = run in background</span>
+<span class="c-cmd">docker run -p 8080:8080 myapp:v1</span>          <span class="c-cm"># -p = map ports</span>
+
+<span class="c-cm"># LIST — see what's running</span>
+<span class="c-cmd">docker ps</span>                                  <span class="c-cm"># running containers</span>
+<span class="c-cmd">docker images</span>                              <span class="c-cm"># all images on your machine</span>
+
+<span class="c-cm"># LOGS — see what a container printed</span>
+<span class="c-cmd">docker logs container-name</span>
+<span class="c-cmd">docker logs -f container-name</span>             <span class="c-cm"># -f = follow (live stream)</span>
+
+<span class="c-cm"># EXEC — open a shell inside a running container</span>
+<span class="c-cmd">docker exec -it container-name /bin/bash</span>  <span class="c-cm"># like SSH into a container</span>
+
+<span class="c-cm"># STOP / REMOVE</span>
+<span class="c-cmd">docker stop container-name</span>
+<span class="c-cmd">docker rm container-name</span>
+<span class="c-cmd">docker rmi qsn-agent:1.0</span>                  <span class="c-cm"># remove an image</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">3D</span>
+      <span class="ss-title">Run with docker-compose (simpler for local dev)</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">docker-compose reads your docker-compose.yml file and starts everything with one command. Easier than long docker run commands.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'docker-compose up')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">docker-compose up</span>        <span class="c-cm"># start everything</span>
+<span class="c-cmd">docker-compose up -d</span>     <span class="c-cm"># start in background</span>
+<span class="c-cmd">docker-compose down</span>      <span class="c-cm"># stop everything</span>
+<span class="c-cmd">docker-compose logs -f</span>   <span class="c-cm"># watch all logs live</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="itip">
+    <div class="itip-title">Interview power move</div>
+    <p>"I containerized the agent with a two-stage Dockerfile — builder stage installs dependencies, runtime stage copies only what's needed. The final image is under 200MB. I run as non-root for security, inject the API key via environment variable at runtime rather than hardcoding it, and expose a /health endpoint for the liveness probe. <strong>Here's the Dockerfile.</strong>"</p>
+  </div>
+
+  <div class="step-nav">
+    <button class="nav-btn-prev" onclick="goStep(1)">← Back</button>
+    <button class="nav-btn-next" onclick="goStep(3)">Next: Deploy to Kubernetes →</button>
+  </div>
+</div>
+
+<!-- ================================================ STEP 3: KUBERNETES ================================================ -->
+<div class="step" id="step-3">
+  <div class="step-header">
+    <div class="step-eyebrow">
+      <div class="step-num-big" style="background:rgba(45,212,191,.12);color:var(--teal)">4</div>
+      <span class="step-track-label" style="color:var(--teal)">Kubernetes</span>
+    </div>
+    <div class="step-title">Deploy your agent to a local Kubernetes cluster</div>
+    <div class="step-desc">Create a K8s cluster on your laptop, deploy 3 replicas of your agent, simulate a crash, and watch K8s auto-heal it.</div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-title">The moment that makes K8s click</div>
+    Deploy 3 replicas of your agent. Then manually delete one pod. Watch Kubernetes instantly spin up a replacement — without you doing anything. That is the magic of K8s. In production, if an agent crashes at 3am, K8s restarts it before anyone wakes up.
+  </div>
+
+  <div class="substep">
+    <div class="substep-header open" onclick="toggleSS(this)">
+      <span class="ss-num">4A</span>
+      <span class="ss-title">Create your local Kubernetes cluster</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body open">
+      <p class="substep-explain">One command creates a full K8s cluster inside Docker on your laptop. k3d is lightweight — it won't slow your machine down.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'k3d cluster create qsn-cluster --agents 2')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">k3d cluster create qsn-cluster --agents 2</span>
+
+<span class="c-cm"># Creates a cluster named "qsn-cluster" with 2 worker nodes</span>
+<span class="c-out">INFO Creating cluster 'qsn-cluster'</span>
+<span class="c-out">INFO Creating network 'k3d-qsn-cluster'</span>
+<span class="c-out">INFO Creating node 'k3d-qsn-cluster-server-0'</span>
+<span class="c-out">INFO Creating node 'k3d-qsn-cluster-agent-0'</span>
+<span class="c-out">INFO Creating node 'k3d-qsn-cluster-agent-1'</span>
+<span class="c-ok">INFO Cluster 'qsn-cluster' created successfully!</span>
+
+<span class="c-cm"># Verify cluster is running:</span>
+<span class="c-cmd">kubectl get nodes</span>
+<span class="c-ok">NAME                        STATUS   ROLES   AGE</span>
+<span class="c-ok">k3d-qsn-cluster-server-0    Ready    master  30s</span>
+<span class="c-ok">k3d-qsn-cluster-agent-0     Ready    worker  20s</span>
+<span class="c-ok">k3d-qsn-cluster-agent-1     Ready    worker  20s</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">4B</span>
+      <span class="ss-title">Load your Docker image into the cluster</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">k3d clusters can't pull from your local Docker by default. This command imports your image into the cluster so the nodes can use it.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'k3d image import qsn-agent:1.0 -c qsn-cluster')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">k3d image import qsn-agent:1.0 -c qsn-cluster</span>
+
+<span class="c-out">INFO Importing image(s) into cluster 'qsn-cluster'</span>
+<span class="c-ok">INFO Successfully imported image(s)</span>
+
+<span class="c-cm"># In production (Azure), you'd push to ACR instead:</span>
+<span class="c-cm"># docker push myregistry.azurecr.io/qsn-agent:1.0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">4C</span>
+      <span class="ss-title">Create the API key Secret</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">Never put your API key in code or YAML files. Create a K8s Secret — an encrypted key-value store. Your pods read it at runtime.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'kubectl create secret generic qsn-secrets --from-literal=anthropic-api-key=$ANTHROPIC_API_KEY')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">kubectl create secret generic qsn-secrets \
+  --from-literal=anthropic-api-key=$ANTHROPIC_API_KEY</span>
+
+<span class="c-ok">secret/qsn-secrets created</span>
+
+<span class="c-cm"># Verify it exists (values are hidden — base64 encoded):</span>
+<span class="c-cmd">kubectl get secret qsn-secrets</span>
+<span class="c-ok">NAME          TYPE     DATA   AGE</span>
+<span class="c-ok">qsn-secrets   Opaque   1      5s</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">4D</span>
+      <span class="ss-title">Deploy your agent — 3 replicas running</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">Apply both YAML files. K8s reads them and creates 3 agent pods plus a Service to route traffic to them.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal — THE BIG MOMENT</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'kubectl apply -f k8s/')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cmd">kubectl apply -f k8s/</span>
+
+<span class="c-ok">deployment.apps/qsn-agent created</span>
+<span class="c-ok">service/qsn-agent-service created</span>
+
+<span class="c-cm"># Watch pods start up in real time (-w = watch)</span>
+<span class="c-cmd">kubectl get pods -w</span>
+<span class="c-out">NAME                         READY   STATUS              RESTARTS</span>
+<span class="c-out">qsn-agent-7d4f8b9c6-x2k8p   0/1     ContainerCreating   0</span>
+<span class="c-out">qsn-agent-7d4f8b9c6-m9n3q   0/1     ContainerCreating   0</span>
+<span class="c-out">qsn-agent-7d4f8b9c6-p4r7t   0/1     ContainerCreating   0</span>
+<span class="c-ok">qsn-agent-7d4f8b9c6-x2k8p   1/1     Running             0</span>
+<span class="c-ok">qsn-agent-7d4f8b9c6-m9n3q   1/1     Running             0</span>
+<span class="c-ok">qsn-agent-7d4f8b9c6-p4r7t   1/1     Running             0</span>
+
+<span class="c-cm"># 3 pods running! Press Ctrl+C to stop watching</span></div>
+      </div>
+      <div class="expect-box">
+        <div class="expect-title">What 1/1 Running means</div>
+        "1/1" = 1 container out of 1 is running. "Running" = it's alive and healthy. Three of these = 3 copies of your agent, all live, all ready to handle requests.
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">4E</span>
+      <span class="ss-title">Simulate a crash — watch K8s auto-heal ✨</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">This is the moment that makes K8s click. Delete one pod manually. K8s detects the replica count dropped below 3 and immediately creates a replacement. This is why we run 3 replicas — one crashes, two keep running, K8s starts a third.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal — open 2 tabs for this one</span>
+        </div>
+        <div class="terminal-code"><span class="c-cm"># TAB 1: Watch pods continuously</span>
+<span class="c-cmd">kubectl get pods -w</span>
+
+<span class="c-cm"># TAB 2: Kill one pod by name (copy a pod name from Tab 1)</span>
+<span class="c-cmd">kubectl delete pod qsn-agent-7d4f8b9c6-x2k8p</span>
+<span class="c-out">pod "qsn-agent-7d4f8b9c6-x2k8p" deleted</span>
+
+<span class="c-cm"># Back in Tab 1 — watch this happen automatically:</span>
+<span class="c-out">qsn-agent-7d4f8b9c6-x2k8p   1/1  Terminating  0</span>
+<span class="c-out">qsn-agent-7d4f8b9c6-NEW45   0/1  Pending      0    <span class="c-cm">← new one!</span></span>
+<span class="c-ok">qsn-agent-7d4f8b9c6-NEW45   1/1  Running      0    ← healed!</span>
+
+<span class="c-cm"># The new pod was created and running in ~15 seconds</span>
+<span class="c-cm"># WITHOUT you doing anything. That's Kubernetes.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">4F</span>
+      <span class="ss-title">Core kubectl commands — practice these daily</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">kubectl Cheat Sheet</span>
+        </div>
+        <div class="terminal-code"><span class="c-cm"># SEE WHAT'S RUNNING</span>
+<span class="c-cmd">kubectl get pods</span>              <span class="c-cm"># list all pods</span>
+<span class="c-cmd">kubectl get pods -w</span>           <span class="c-cm"># watch live updates</span>
+<span class="c-cmd">kubectl get deployments</span>       <span class="c-cm"># see all deployments</span>
+<span class="c-cmd">kubectl get services</span>          <span class="c-cm"># see all services</span>
+<span class="c-cmd">kubectl get all</span>               <span class="c-cm"># see everything at once</span>
+
+<span class="c-cm"># INSPECT A POD</span>
+<span class="c-cmd">kubectl describe pod pod-name</span> <span class="c-cm"># detailed info + events</span>
+<span class="c-cmd">kubectl logs pod-name</span>         <span class="c-cm"># what the pod printed</span>
+<span class="c-cmd">kubectl logs -f pod-name</span>      <span class="c-cm"># follow logs live</span>
+
+<span class="c-cm"># DEPLOY / UPDATE</span>
+<span class="c-cmd">kubectl apply -f k8s/</span>         <span class="c-cm"># deploy or update resources</span>
+<span class="c-cmd">kubectl rollout status deployment/qsn-agent</span>  <span class="c-cm"># watch rollout</span>
+<span class="c-cmd">kubectl rollout undo deployment/qsn-agent</span>    <span class="c-cm"># rollback!</span>
+
+<span class="c-cm"># SCALE</span>
+<span class="c-cmd">kubectl scale deployment qsn-agent --replicas=5</span>  <span class="c-cm"># 5 pods</span>
+
+<span class="c-cm"># CLEAN UP</span>
+<span class="c-cmd">kubectl delete -f k8s/</span>        <span class="c-cm"># remove everything you deployed</span>
+<span class="c-cmd">k3d cluster delete qsn-cluster</span> <span class="c-cm"># delete the whole cluster</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="itip">
+    <div class="itip-title">Interview power move</div>
+    <p>"I deployed 3 replicas of the containerized agent to a local k3d cluster and tested the self-healing behavior by manually deleting a pod. K8s brought the replacement up in under 15 seconds. <strong>For production AKS, the same deployment.yaml works — just change the image tag to point to Azure Container Registry.</strong> I also configured liveness and readiness probes so K8s knows when an agent is truly healthy vs just started."</p>
+  </div>
+
+  <div class="step-nav">
+    <button class="nav-btn-prev" onclick="goStep(2)">← Back</button>
+    <button class="nav-btn-next" onclick="goStep(4)">Next: CI/CD Pipeline →</button>
+  </div>
+</div>
+
+<!-- ================================================ STEP 4: CICD ================================================ -->
+<div class="step" id="step-4">
+  <div class="step-header">
+    <div class="step-eyebrow">
+      <div class="step-num-big" style="background:rgba(192,132,252,.12);color:var(--purple)">5</div>
+      <span class="step-track-label" style="color:var(--purple)">CI/CD</span>
+    </div>
+    <div class="step-title">Automate deployment with GitHub Actions</div>
+    <div class="step-desc">Push code to GitHub → pipeline runs tests → builds Docker image → deploys automatically. Zero manual steps.</div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-title">CI/CD = the QSN publishing workflow, but for code</div>
+    When you finish a QSN video, it goes through editing → review → approval → publish. CI/CD does this for code automatically. Every time you push to GitHub, the pipeline: runs tests (editing), builds Docker (review), deploys (publish). If tests fail, the pipeline stops. Nothing broken reaches production.
+  </div>
+
+  <div class="substep">
+    <div class="substep-header open" onclick="toggleSS(this)">
+      <span class="ss-num">5A</span>
+      <span class="ss-title">Push your project to GitHub</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body open">
+      <p class="substep-explain">Create a GitHub repo and push your project. The .github/workflows/deploy.yml file is already in your project — GitHub Actions will auto-detect it.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'git init && git add . && git commit -m "initial: QSN LangGraph agent"')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cm"># Initialize git and push to GitHub</span>
+<span class="c-cmd">git init</span>
+<span class="c-cmd">git add .</span>
+<span class="c-cmd">git commit -m "initial: QSN LangGraph agent"</span>
+
+<span class="c-cm"># Create repo at github.com, then push:</span>
+<span class="c-cmd">git remote add origin https://github.com/YOUR-USERNAME/qsn-demo.git</span>
+<span class="c-cmd">git push -u origin main</span>
+
+<span class="c-cm"># IMPORTANT: Add your API key as a GitHub Secret</span>
+<span class="c-cm"># Go to: GitHub repo → Settings → Secrets → Actions → New secret</span>
+<span class="c-cm"># Name: ANTHROPIC_API_KEY</span>
+<span class="c-cm"># Value: your actual key</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">5B</span>
+      <span class="ss-title">Watch the pipeline run</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">After you push, go to your GitHub repo → Actions tab. You'll see the pipeline running. Green checkmarks = passing. Red X = failed with a log showing exactly what broke.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">GitHub Actions — what you'll see</span>
+        </div>
+        <div class="terminal-code"><span class="c-cm">GitHub → Your Repo → Actions tab</span>
+
+<span class="c-ok">✓ Run Tests</span>
+<span class="c-out">  Set up Python 3.11           3s</span>
+<span class="c-out">  Install dependencies         45s</span>
+<span class="c-out">  Run tests                    2s</span>
+<span class="c-ok">  ✅ Import OK</span>
+<span class="c-ok">  ✅ Graph compiled OK</span>
+
+<span class="c-ok">✓ Build Docker Image</span>
+<span class="c-out">  Checkout code                2s</span>
+<span class="c-out">  Build Docker image           2m 14s</span>
+<span class="c-out">  Test Docker image            8s</span>
+<span class="c-ok">  ✅ Health check passed</span>
+
+<span class="c-ok">✓ Deploy to Kubernetes</span>
+<span class="c-ok">  ✅ Deployment complete</span>
+
+<span class="c-ok">Pipeline passed in 3m 28s</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">5C</span>
+      <span class="ss-title">Trigger a deployment by changing code</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <p class="substep-explain">Change one line of code and push. Watch the pipeline automatically rebuild and redeploy. This is the point — you never manually deploy again.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Terminal — trigger a new deploy</span>
+          <button class="copy-btn" onclick="copyCmd(this, 'git add . && git commit -m "feat: update analyst agent prompt" && git push')">COPY</button>
+        </div>
+        <div class="terminal-code"><span class="c-cm"># Make any change to qsn_agent.py</span>
+<span class="c-cm"># e.g., update the Analyst agent's system prompt</span>
+
+<span class="c-cmd">git add .</span>
+<span class="c-cmd">git commit -m "feat: update analyst agent prompt"</span>
+<span class="c-cmd">git push</span>
+
+<span class="c-cm"># GitHub Actions automatically:</span>
+<span class="c-cm"># 1. Runs tests on your new code</span>
+<span class="c-cm"># 2. Builds a new Docker image tagged with the commit SHA</span>
+<span class="c-cm"># 3. Does a rolling update on K8s (zero downtime)</span>
+<span class="c-cm"># 4. Old pods shut down AFTER new pods are healthy</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="itip">
+    <div class="itip-title">Interview power move</div>
+    <p>"My CI/CD pipeline runs on every push to main. Tests first — if they fail, nothing deploys. Then Docker build tagged with the commit SHA so I can trace any production pod back to the exact code that built it. Rolling update strategy means zero downtime — new pods come up before old ones go down. <strong>I can show you the GitHub Actions workflow file right now.</strong>"</p>
+  </div>
+
+  <div class="step-nav">
+    <button class="nav-btn-prev" onclick="goStep(3)">← Back</button>
+    <button class="nav-btn-next" onclick="goStep(5)">Next: Interview Ready →</button>
+  </div>
+</div>
+
+<!-- ================================================ STEP 5: INTERVIEW ================================================ -->
+<div class="step" id="step-5">
+  <div class="step-header">
+    <div class="step-eyebrow">
+      <div class="step-num-big" style="background:rgba(250,204,21,.12);color:var(--yellow)">6</div>
+      <span class="step-track-label" style="color:var(--yellow)">Interview Ready</span>
+    </div>
+    <div class="step-title">You built it. Now own it in the room.</div>
+    <div class="step-desc">The exact sentences to say, what to show on your laptop, and how to connect everything back to your QSN + Rizing background.</div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-title">What you can legitimately say after completing this lab</div>
+    "I built a live multi-agent LangGraph pipeline, containerized it with Docker, deployed it to a local Kubernetes cluster with 3 replicas, configured health checks and self-healing, and wired it to a CI/CD pipeline in GitHub Actions." That is not a stretch. That is exactly what you built.
+  </div>
+
+  <div class="substep">
+    <div class="substep-header open" onclick="toggleSS(this)">
+      <span class="ss-num">6A</span>
+      <span class="ss-title">The 2-minute demo script — say this in the interview</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body open">
+      <p class="substep-explain">Memorize this. Pull up your laptop. Run it live.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Your interview demo — live commands to run</span>
+        </div>
+        <div class="terminal-code"><span class="c-cm"># SAY: "Let me show you the LangGraph pipeline running."</span>
+<span class="c-cmd">python qsn_agent.py</span>
+
+<span class="c-cm"># SAY: "Each of these lines is one agent firing — Router,</span>
+<span class="c-cm"># Analyst, Title, Description, Thumbnail. They share a</span>
+<span class="c-cm"># TypedDict State object. Took 4.8 seconds, 1,247 tokens."</span>
+
+<span class="c-cm"># SAY: "Now let me show you the containerized version."</span>
+<span class="c-cmd">docker run -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY qsn-agent:1.0</span>
+
+<span class="c-cm"># SAY: "Same output, now running inside Docker. I can push</span>
+<span class="c-cm"># this image to Azure Container Registry and it runs</span>
+<span class="c-cm"># identically on AKS."</span>
+
+<span class="c-cm"># SAY: "Here's what it looks like on Kubernetes — 3 replicas."</span>
+<span class="c-cmd">kubectl get pods</span>
+
+<span class="c-cm"># SAY: "If I delete one pod, watch K8s restart it automatically."</span>
+<span class="c-cmd">kubectl delete pod &lt;pod-name&gt;</span>
+<span class="c-cmd">kubectl get pods -w</span>
+
+<span class="c-cm"># SAY: "That's the self-healing behavior. This is what</span>
+<span class="c-cm"># production readiness means for agentic systems."</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">6B</span>
+      <span class="ss-title">Connect your demo to the job description — word for word</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Job description phrase → your exact response</span>
+        </div>
+        <div class="terminal-code"><span class="c-hi">"Lead Agentic DevOps Strategy"</span>
+<span class="c-ok">→ "I designed a multi-agent orchestration pattern for Queensland</span>
+<span class="c-ok">   Rail and formalized it into a reusable framework — 8 agents,</span>
+<span class="c-ok">   one Orchestrator, typed State. That IS agentic DevOps strategy."</span>
+
+<span class="c-hi">"Framework Development"</span>
+<span class="c-ok">→ "I built a standard agent scaffold: typed State, structured</span>
+<span class="c-ok">   JSON logging on every node, /health endpoint, Dockerfile,</span>
+<span class="c-ok">   K8s deployment YAML. Reusable for any client."</span>
+
+<span class="c-hi">"Cloud-Native Deployment"</span>
+<span class="c-ok">→ "I containerized the agent with a two-stage Dockerfile, deployed</span>
+<span class="c-ok">   to local k3d cluster. Same deployment.yaml points to AKS in prod.</span>
+<span class="c-ok">   GitHub Actions handles the CI/CD pipeline."</span>
+
+<span class="c-hi">"Production Readiness"</span>
+<span class="c-ok">→ "Health checks, liveness probes, non-root user, secrets via K8s</span>
+<span class="c-ok">   Secrets not env vars in code, resource limits, structured logs."</span>
+
+<span class="c-hi">"Enterprise data integration (SAP)" — bonus points</span>
+<span class="c-ok">→ "I have 13 years of SAP EHSM. I know what it takes to integrate</span>
+<span class="c-ok">   agentic systems with enterprise backends — BOPF, IDOCs, BTP APIs.</span>
+<span class="c-ok">   That's the gap most DevOps candidates can't bridge."</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="substep">
+    <div class="substep-header" onclick="toggleSS(this)">
+      <span class="ss-num">6C</span>
+      <span class="ss-title">What to do between now and the interview</span>
+      <span class="ss-arrow">›</span>
+    </div>
+    <div class="substep-body">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="term-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="term-label">Daily practice routine</span>
+        </div>
+        <div class="terminal-code"><span class="c-cm">EVERY DAY:</span>
+<span class="c-cmd">python qsn_agent.py</span>       <span class="c-cm"># run it until it's second nature</span>
+<span class="c-cmd">kubectl get pods</span>           <span class="c-cm"># keep cluster running, check daily</span>
+<span class="c-cmd">docker images</span>             <span class="c-cm"># know what's in your registry</span>
+
+<span class="c-cm">THIS WEEK:</span>
+<span class="c-cm"># Add a 6th agent — e.g., a "Tags Agent" that suggests</span>
+<span class="c-cm"># YouTube tags. Shows you can extend the pipeline.</span>
+
+<span class="c-cm"># Add real structured logging to every agent</span>
+<span class="c-cm"># Push to GitHub, watch CI/CD pipeline trigger</span>
+
+<span class="c-cm">BEFORE INTERVIEW:</span>
+<span class="c-cm"># Test the full demo 5x without looking at notes</span>
+<span class="c-cm"># Time your explanation: 2 mins max per topic</span>
+<span class="c-cm"># Have GitHub repo open in browser, terminal ready</span>
+<span class="c-cm"># kubectl get pods showing 3/3 Running before you walk in</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="checkpoint">
+    <div class="checkpoint-title">You are interview-ready when you can do all of these from memory</div>
+    <ul>
+      <li>Run <strong>python qsn_agent.py</strong> and explain each agent as it fires</li>
+      <li>Run <strong>docker build</strong> and explain what each Dockerfile stage does</li>
+      <li>Run <strong>kubectl get pods</strong> and explain replicas, readiness, and health checks</li>
+      <li>Explain LangGraph: State, Nodes, Edges, Conditional Edges in 90 seconds</li>
+      <li>Explain CI/CD: what triggers the pipeline, what each stage does, what a rolling update is</li>
+      <li>Connect every answer back to <strong>Queensland Rail, QSN, and your SAP background</strong></li>
+    </ul>
+  </div>
+
+  <div style="background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:16px;margin-top:16px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Final thought</div>
+    <p style="font-size:13px;color:var(--text);line-height:1.7">Most people applying for this role have read about these tools. <strong>You will have built and run them.</strong> That difference is everything in a technical interview. When the interviewer asks "have you deployed to Kubernetes?" — you can say yes and show the pods running. That closes the gap instantly.</p>
+  </div>
+
+  <div class="step-nav">
+    <button class="nav-btn-prev" onclick="goStep(4)">← Back</button>
+    <button class="nav-btn-next" style="background:var(--yellow);color:#000" onclick="goStep(0)">↺ Start Over — Practice Again</button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+let currentStep = 0;
+const TOTAL = 6;
+
+function goStep(n) {
+  document.querySelectorAll('.step').forEach((s,i) => s.classList.toggle('active', i === n));
+  document.querySelectorAll('.slink').forEach((s,i) => {
+    s.classList.toggle('active', i === n);
+    if (i < n) s.classList.add('done'); else s.classList.remove('done');
+  });
+  currentStep = n;
+  const pct = Math.round(((n + 1) / TOTAL) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-label').textContent = `Step ${n+1} of ${TOTAL}`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleSS(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+function copyCmd(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'COPIED';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+</script>
+</body>
+</html>

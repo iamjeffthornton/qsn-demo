@@ -1,0 +1,111 @@
+# ============================================================
+# k8s/deployment.yaml — Run your agent on Kubernetes
+# ============================================================
+# WHAT THIS FILE DOES (plain English):
+#   "Keep 3 copies of the QSN agent running at all times.
+#    If one crashes, restart it automatically.
+#    Pull the API key from a Secret — never hardcode it.
+#    Check the /health endpoint every 30 seconds."
+#
+# APPLY WITH:
+#   kubectl apply -f k8s/
+# ============================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qsn-agent
+  namespace: default
+  labels:
+    app: qsn-agent
+    version: "1.0"
+    team: qsn-rugby
+
+spec:
+  # ---- HOW MANY COPIES ----
+  # 3 replicas = if one crashes, 2 are still serving
+  # K8s will restart the crashed one automatically
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: qsn-agent
+
+  # ---- ROLLING UPDATE STRATEGY ----
+  # "When deploying a new version, bring up 1 new pod BEFORE
+  #  taking down 1 old pod — so there's always capacity"
+  # This = zero-downtime deployments
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # can temporarily have 4 pods during update
+      maxUnavailable: 0  # never drop below 3 running pods
+
+  template:
+    metadata:
+      labels:
+        app: qsn-agent
+    
+    spec:
+      containers:
+      - name: qsn-agent
+        # Replace with your actual registry after pushing:
+        # myregistry.azurecr.io/qsn-agent:1.0
+        image: qsn-agent:1.0
+        imagePullPolicy: IfNotPresent  # use local image (for local k3d cluster)
+
+        # ---- PORTS ----
+        ports:
+        - containerPort: 8080
+          name: health-port
+
+        # ---- SECRET INJECTION ----
+        # The API key lives in a K8s Secret (created separately below)
+        # It gets injected as an environment variable — never in code
+        env:
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: qsn-secrets      # name of the K8s Secret object
+              key: anthropic-api-key  # key inside that Secret
+
+        # ---- RESOURCE LIMITS ----
+        # "This container gets at most 0.5 CPU and 512MB RAM"
+        # If it exceeds this, K8s kills and restarts it
+        resources:
+          requests:
+            memory: "128Mi"  # guaranteed minimum
+            cpu: "100m"      # 100 millicores = 0.1 CPU core
+          limits:
+            memory: "512Mi"  # maximum allowed
+            cpu: "500m"      # 0.5 CPU core max
+
+        # ---- LIVENESS PROBE ----
+        # "Is this container still alive?"
+        # K8s calls GET /health every 30s
+        # If it fails 3 times in a row → kill and restart the pod
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10  # wait 10s before first check (startup time)
+          periodSeconds: 30
+          failureThreshold: 3
+
+        # ---- READINESS PROBE ----
+        # "Is this container ready to receive traffic?"
+        # K8s won't send requests until this passes
+        # Different from liveness: failing readiness = remove from Service
+        # but DON'T restart. Good for temporary overload situations.
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+      # ---- SECURITY ----
+      # Run as non-root user (matches our Dockerfile)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000

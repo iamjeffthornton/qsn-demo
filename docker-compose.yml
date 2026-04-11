@@ -1,0 +1,38 @@
+# ============================================================
+# docker-compose.yml — Run everything locally with one command
+# ============================================================
+# WHAT THIS DOES:
+#   Starts your QSN agent container with your API key injected
+#   Run with:  docker-compose up
+#   Stop with: docker-compose down
+# ============================================================
+
+version: '3.8'
+
+services:
+  qsn-agent:
+    # Build from our Dockerfile in the current directory
+    build: .
+    
+    # Give the container a friendly name
+    container_name: qsn-rugby-agent
+    
+    # Inject your API key from your local environment
+    # Make sure you ran: export ANTHROPIC_API_KEY="sk-ant-..."
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    
+    # Map container port 8080 to your laptop port 8080
+    # So you can visit http://localhost:8080/health in your browser
+    ports:
+      - "8080:8080"
+    
+    # Restart automatically if the container crashes
+    restart: unless-stopped
+    
+    # Resource limits — good practice, mirrors K8s resource requests
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'

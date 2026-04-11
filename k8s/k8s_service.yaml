@@ -1,0 +1,35 @@
+# ============================================================
+# k8s/service.yaml — Give your agents a stable front door
+# ============================================================
+# WHAT THIS DOES:
+#   Creates a stable address that routes traffic to all 3 agent pods
+#   Pods come and go (IP addresses change) — Service stays constant
+#   Like a restaurant's phone number — chefs change, number stays
+# ============================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: qsn-agent-service
+  namespace: default
+  labels:
+    app: qsn-agent
+
+spec:
+  # ---- SELECTOR ----
+  # "Route traffic to any pod with the label app=qsn-agent"
+  selector:
+    app: qsn-agent
+
+  # ---- PORTS ----
+  ports:
+  - name: health
+    port: 80           # port the Service listens on
+    targetPort: 8080   # port on the Pod to forward to
+    protocol: TCP
+
+  # ---- TYPE ----
+  # ClusterIP = only accessible inside the cluster (most secure default)
+  # NodePort  = accessible from outside on a random port (for local testing)
+  # LoadBalancer = creates a cloud load balancer (for production on AKS)
+  type: NodePort  # use NodePort for local k3d testing
