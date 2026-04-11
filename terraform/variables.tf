@@ -2,30 +2,31 @@
 # variables.tf — All the inputs your Terraform config needs
 # ============================================================
 # WHAT THIS IS:
-#   Think of variables like function parameters in Python.
-#   Instead of hardcoding "qrail" or "eastus" everywhere,
-#   you define them here and pass different values per client.
+#   Variables are like the lineup sheet before a match.
+#   Instead of hardcoding team names and locations everywhere,
+#   you define them here and swap values per deployment.
 #
-#   Queensland Rail:  client_name = "qrail",   location = "australiaeast"
-#   US Energy:        client_name = "usenergy", location = "eastus"
-#   UK Finance:       client_name = "ukfin",    location = "uksouth"
+#   USA Eagles coverage:   league_name = "usaeagles", location = "eastus"
+#   All Blacks coverage:   league_name = "allblacks", location = "australiaeast"
+#   Six Nations coverage:  league_name = "sixnations", location = "uksouth"
 #
-#   Same code. Different variables. Different environments.
-#   That is the power of Infrastructure as Code.
+#   Same infrastructure code. Different variables.
+#   Different environments. That is Infrastructure as Code.
 # ============================================================
 
 
-# ---- CLIENT IDENTITY ----
+# ---- LEAGUE / DEPLOYMENT IDENTITY ----
 
-variable "client_name" {
-  description = "Short name for the client — used in all resource names"
+variable "league_name" {
+  description = "Short name for the rugby league or coverage region — used in all resource names"
   type        = string
+  default     = "qsnrugby"
 
   validation {
-    # Must be lowercase letters only, max 8 chars
-    # Azure has strict naming rules for some resources
-    condition     = can(regex("^[a-z]{2,8}$", var.client_name))
-    error_message = "client_name must be 2-8 lowercase letters only."
+    # Lowercase letters only, 2-10 chars
+    # Azure has strict naming rules for container registries
+    condition     = can(regex("^[a-z]{2,10}$", var.league_name))
+    error_message = "league_name must be 2-10 lowercase letters only. No spaces or hyphens."
   }
 }
 
@@ -39,7 +40,7 @@ variable "owner_name" {
 # ---- ENVIRONMENT ----
 
 variable "environment" {
-  description = "Which environment: dev, staging, or production"
+  description = "Which environment to deploy: dev, staging, or production"
   type        = string
   default     = "dev"
 
@@ -57,31 +58,37 @@ variable "location" {
   type        = string
   default     = "eastus"
 
-  # Common Azure regions:
-  # "eastus"          = Virginia, USA (cheapest, most services)
-  # "westus2"         = Washington, USA
-  # "australiaeast"   = Sydney, Australia (Queensland Rail)
-  # "uksouth"         = London, UK
-  # "germanywestcentral" = Frankfurt, Germany (EU data residency)
+  # Common Azure regions for rugby coverage:
+  # "eastus"           = Virginia, USA     (USA Eagles, Americas Rugby)
+  # "westus2"          = Washington, USA   (Pacific coverage)
+  # "australiaeast"    = Sydney, Australia (Super Rugby, Wallabies)
+  # "uksouth"          = London, UK        (Premiership, Six Nations)
+  # "francecentral"    = Paris, France     (Top 14, Six Nations)
+  # "southafricanorth" = Johannesburg, SA  (URC, Springboks)
 }
 
 
 # ---- KUBERNETES ----
 
 variable "node_vm_size" {
-  description = "Azure VM size for Kubernetes nodes"
+  description = "Azure VM size for each Kubernetes node"
   type        = string
-  default     = "Standard_D2s_v3"   # 2 CPU, 8GB RAM — good for dev
+  default     = "Standard_D2s_v3"  # 2 CPU, 8GB RAM — good for dev
 
-  # Production options:
-  # "Standard_D4s_v3"  = 4 CPU, 16GB RAM  (recommended for AI agents)
-  # "Standard_D8s_v3"  = 8 CPU, 32GB RAM  (heavy workloads)
+  # Options by workload:
+  # "Standard_D2s_v3"  = 2 CPU,  8GB  (dev/demo — cheapest)
+  # "Standard_D4s_v3"  = 4 CPU,  16GB (recommended for live match coverage)
+  # "Standard_D8s_v3"  = 8 CPU,  32GB (high-volume tournament coverage)
 }
 
 variable "replica_count" {
-  description = "How many agent pod replicas to run"
+  description = "How many QSN agent pod replicas to run simultaneously"
   type        = number
   default     = 3
+
+  # 1 = dev/demo (single pod, no redundancy)
+  # 3 = standard production (one pod can fail, two keep running)
+  # 5 = major tournament coverage (Six Nations, Rugby World Cup)
 
   validation {
     condition     = var.replica_count >= 1 && var.replica_count <= 10
@@ -91,21 +98,21 @@ variable "replica_count" {
 
 
 # ---- SECRETS ----
-# IMPORTANT: Never put actual secret values in this file.
-# Pass them via environment variables or a .tfvars file
-# that is listed in .gitignore (never committed to GitHub).
+# IMPORTANT: Never put real secret values in this file.
+# Pass them via environment variables or a terraform.tfvars
+# file that is listed in .gitignore and NEVER committed to GitHub.
 
 variable "anthropic_api_key" {
-  description = "Your Anthropic API key — stored in Key Vault, never in code"
+  description = "Anthropic API key — stored in Key Vault, never in code or logs"
   type        = string
-  sensitive   = true   # Terraform hides this in all output and logs
+  sensitive   = true  # Terraform hides this value in all output and plan files
 }
 
 
 # ---- MONITORING ----
 
 variable "alert_email" {
-  description = "Email address to receive production alerts"
+  description = "Email address that receives production alerts when agents crash"
   type        = string
   default     = "jeff@jeffreythornton.com"
 }

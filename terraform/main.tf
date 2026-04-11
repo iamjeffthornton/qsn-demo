@@ -11,7 +11,7 @@
 #   3. Key Vault          — stores your API keys securely
 #   4. Kubernetes Cluster — runs your 3 agent replicas
 #   5. Log Analytics      — captures all your agent logs
-#   6. Monitor Workspace  — dashboards and alerts
+#   6. Monitor Alerts     — notifies you when things break
 #
 # HOW TO USE:
 #   terraform init      (download Azure provider — do once)
@@ -24,7 +24,7 @@
 # ============================================================
 # PROVIDER — tells Terraform "we're building on Azure"
 # ============================================================
-# Think of this like telling a contractor which city to work in.
+# Think of this like telling a rugby team which stadium to play in.
 # "azurerm" = Azure Resource Manager = Microsoft Azure
 
 terraform {
@@ -42,8 +42,8 @@ terraform {
   }
 
   # ---- REMOTE STATE (uncomment when working in a team) ----
-  # Stores the Terraform state file in Azure Blob Storage
-  # so the whole team shares the same state, not just your laptop
+  # Stores Terraform state in Azure Blob Storage so the whole
+  # team shares the same state file, not just your laptop.
   #
   # backend "azurerm" {
   #   resource_group_name  = "rg-terraform-state"
@@ -56,7 +56,6 @@ terraform {
 provider "azurerm" {
   features {
     key_vault {
-      # When you delete the Key Vault, also delete its contents
       purge_soft_delete_on_destroy = true
     }
   }
@@ -66,10 +65,9 @@ provider "azurerm" {
 # ============================================================
 # RANDOM SUFFIX — makes names globally unique
 # ============================================================
-# Azure requires some resource names to be globally unique
-# (like domain names). Adding a random 4-character suffix
-# prevents naming conflicts across different deployments.
-# Example: "acr-qsn-a3f2" instead of just "acr-qsn"
+# Azure requires some names to be globally unique (like domain names).
+# A random 4-character suffix prevents naming conflicts.
+# Example: "acrqsnusa3f2" instead of just "acrqsnusa"
 
 resource "random_string" "suffix" {
   length  = 4
@@ -78,11 +76,10 @@ resource "random_string" "suffix" {
 }
 
 locals {
-  # Build a consistent suffix used across all resource names
   suffix = random_string.suffix.result
 
   # Standard tags applied to EVERY resource
-  # In enterprise Azure, tags = billing tracking + ownership
+  # Tags track ownership and billing across all environments
   common_tags = {
     Project     = "QSN-Rugby-Agent"
     Environment = var.environment
@@ -96,13 +93,14 @@ locals {
 # ============================================================
 # 1. RESOURCE GROUP — the folder that holds everything
 # ============================================================
-# In Azure, a Resource Group is like a project folder.
-# Every Azure resource (cluster, registry, vault) must live
-# inside one. Delete the Resource Group = delete everything in it.
-# Useful for client teardown: one command removes the whole stack.
+# In Azure, a Resource Group is like a rugby team's kit bag.
+# Every resource (cluster, registry, vault) lives inside one.
+# Delete the Resource Group and everything inside it is gone.
+# Perfect for spinning up a demo and tearing it down cleanly
+# when the match is over.
 
 resource "azurerm_resource_group" "qsn" {
-  name     = "rg-${var.client_name}-qsn-${local.suffix}"
+  name     = "rg-${var.league_name}-qsn-${local.suffix}"
   location = var.location
   tags     = local.common_tags
 }
@@ -111,29 +109,21 @@ resource "azurerm_resource_group" "qsn" {
 # ============================================================
 # 2. CONTAINER REGISTRY — stores your Docker images
 # ============================================================
-# Remember last night? You ran:
-#   docker build -t qsn-agent:1.0 .
+# Remember: docker build -t qsn-agent:1.0 .
+# That image lives on your laptop right now.
+# Azure Container Registry (ACR) is the private Docker Hub
+# where images live in the cloud. Your K8s cluster pulls
+# from ACR instead of your laptop.
 #
-# That image lives on your laptop. Azure Container Registry (ACR)
-# is the private Docker Hub where your images live in the cloud.
-# Your K8s cluster pulls from ACR instead of your laptop.
-#
-# It's like uploading your QSN videos to a private YouTube
-# before pushing them to the public channel.
+# Think of it like QSN's private video archive — all match
+# footage stored centrally so any coach can pull it anywhere.
 
 resource "azurerm_container_registry" "qsn" {
-  name                = "acrqsn${var.client_name}${local.suffix}"
+  name                = "acrqsn${var.league_name}${local.suffix}"
   resource_group_name = azurerm_resource_group.qsn.name
   location            = azurerm_resource_group.qsn.location
-
-  # Standard = private registry with geo-replication available
-  # Basic = cheapest (good for dev/demo)
-  # Premium = enterprise features (vulnerability scanning, etc.)
-  sku = var.environment == "production" ? "Standard" : "Basic"
-
-  # Allow the AKS cluster to pull images without passwords
-  # Uses Azure Managed Identity instead — more secure
-  admin_enabled = false
+  sku                 = var.environment == "production" ? "Standard" : "Basic"
+  admin_enabled       = false
 
   tags = local.common_tags
 }
@@ -142,32 +132,24 @@ resource "azurerm_container_registry" "qsn" {
 # ============================================================
 # 3. KEY VAULT — stores your API keys securely
 # ============================================================
-# Remember: you never hardcode your Anthropic API key.
-# Last night you stored it as a K8s Secret.
-# In Azure, Key Vault is the enterprise-grade version of that.
+# Your Anthropic API key never goes in code or YAML files.
+# Key Vault is the enterprise-grade secret store.
+# Pods request the key at runtime using their Azure identity.
 #
-# Think of it like a bank vault for secrets.
-# Your pods request the key at runtime using their identity.
-# The key never appears in any file, log, or code.
+# Think of it like the match officials' secure safe — only
+# authorised people can access it, and every access is logged.
 
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "qsn" {
-  name                = "kv-qsn-${var.client_name}-${local.suffix}"
-  resource_group_name = azurerm_resource_group.qsn.name
-  location            = azurerm_resource_group.qsn.location
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-
-  # Standard = software-protected keys (good for most use cases)
-  # Premium  = hardware-protected keys (regulated industries)
-  sku_name = "standard"
-
-  # Soft delete = deleted secrets recoverable for 7 days
-  # Prevents accidental permanent deletion
+  name                       = "kv-qsn-${var.league_name}-${local.suffix}"
+  resource_group_name        = azurerm_resource_group.qsn.name
+  location                   = azurerm_resource_group.qsn.location
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
   soft_delete_retention_days = 7
-  purge_protection_enabled   = false  # set true in regulated industries
+  purge_protection_enabled   = false
 
-  # Who can access this vault
   access_policy {
     tenant_id = data.azurerm_client_config.current.tenant_id
     object_id = data.azurerm_client_config.current.object_id
@@ -180,14 +162,12 @@ resource "azurerm_key_vault" "qsn" {
   tags = local.common_tags
 }
 
-# Store the Anthropic API key in Key Vault
-# Value comes from your variables (never hardcoded here)
+# Store the Anthropic API key — value comes from variables,
+# never hardcoded directly in this file
 resource "azurerm_key_vault_secret" "anthropic_key" {
-  name         = "anthropic-api-key"
-  value        = var.anthropic_api_key
-  key_vault_id = azurerm_key_vault.qsn.id
-
-  # Tag with expiry reminder (good practice for API keys)
+  name            = "anthropic-api-key"
+  value           = var.anthropic_api_key
+  key_vault_id    = azurerm_key_vault.qsn.id
   expiration_date = "2026-12-31T00:00:00Z"
 }
 
@@ -195,23 +175,22 @@ resource "azurerm_key_vault_secret" "anthropic_key" {
 # ============================================================
 # 4. LOG ANALYTICS — captures all your agent logs
 # ============================================================
-# Remember the structured JSON logs your agents emit?
+# Every agent emits structured JSON logs:
 #   {"agent":"router","status":"success","tokens":183,"latency_ms":782}
 #
-# Log Analytics is where those logs live in Azure.
-# You can query them like a database:
-#   "Show me all agent calls that took more than 5 seconds"
+# Log Analytics stores those logs and lets you query them:
+#   "Show me all agents that took more than 5 seconds"
 #   "Show me total token spend per agent this week"
 #   "Show me every error in the last 24 hours"
+#
+# Think of it like the match stats ticker — every play recorded,
+# searchable, and reviewable long after the final whistle.
 
 resource "azurerm_log_analytics_workspace" "qsn" {
-  name                = "law-qsn-${var.client_name}-${local.suffix}"
+  name                = "law-qsn-${var.league_name}-${local.suffix}"
   resource_group_name = azurerm_resource_group.qsn.name
   location            = azurerm_resource_group.qsn.location
-
-  # How many days to keep logs before auto-deletion
-  # 30 days = good for dev, 90+ days = enterprise compliance
-  retention_in_days = var.environment == "production" ? 90 : 30
+  retention_in_days   = var.environment == "production" ? 90 : 30
 
   tags = local.common_tags
 }
@@ -220,60 +199,44 @@ resource "azurerm_log_analytics_workspace" "qsn" {
 # ============================================================
 # 5. KUBERNETES CLUSTER (AKS) — runs your agent replicas
 # ============================================================
-# This is the big one. Last night you created a local K8s
-# cluster with: k3d cluster create qsn-cluster
+# Last night you ran: k3d cluster create qsn-cluster
+# This creates the same thing but on Azure — production grade.
+# Microsoft manages the control plane. You deploy workloads.
+# Your 3 agent pods run here with auto-scaling and self-healing.
 #
-# This creates the same thing but on Azure (AKS).
-# Microsoft manages the control plane — you just deploy workloads.
-# Your 3 agent pods run here, with auto-scaling and self-healing.
+# Think of it like a full stadium with automatic capacity —
+# more fans arrive, more gates open. A gate breaks, it gets
+# replaced instantly without stopping the match.
 
 resource "azurerm_kubernetes_cluster" "qsn" {
-  name                = "aks-qsn-${var.client_name}-${local.suffix}"
+  name                = "aks-qsn-${var.league_name}-${local.suffix}"
   location            = azurerm_resource_group.qsn.location
   resource_group_name = azurerm_resource_group.qsn.name
+  dns_prefix          = "qsn-${var.league_name}-${local.suffix}"
 
-  # The DNS prefix for your cluster's API endpoint
-  dns_prefix = "qsn-${var.client_name}-${local.suffix}"
-
-  # ---- DEFAULT NODE POOL ----
-  # A "node pool" is a group of VMs that run your pods.
-  # Each node can run multiple pods (agent replicas).
   default_node_pool {
-    name = "agentpool"
+    name            = "agentpool"
+    node_count      = var.environment == "production" ? 3 : 1
+    vm_size         = var.node_vm_size
+    os_disk_size_gb = 50
 
-    # How many VMs in the pool
-    # Production: 3 nodes for high availability
-    # Dev: 1 node to save cost
-    node_count = var.environment == "production" ? 3 : 1
-
-    # VM size — D4s_v3 = 4 CPU, 16GB RAM
-    # Good for AI workloads that call external APIs
-    vm_size = var.node_vm_size
-
-    # Auto-scaling: if load spikes, add more nodes automatically
+    # Auto-scaling: adds nodes automatically when load spikes
     enable_auto_scaling = var.environment == "production" ? true : false
     min_count           = var.environment == "production" ? 2 : null
     max_count           = var.environment == "production" ? 5 : null
-
-    # Where the node OS disk lives (faster than default)
-    os_disk_size_gb = 50
   }
 
-  # ---- IDENTITY ----
-  # SystemAssigned = AKS gets its own Azure identity automatically
-  # This identity is used to pull images from ACR without passwords
+  # SystemAssigned = AKS gets its own Azure identity
+  # Used to pull images from ACR without passwords
   identity {
     type = "SystemAssigned"
   }
 
-  # ---- MONITORING ----
-  # Connect AKS to your Log Analytics workspace
-  # All pod logs, metrics, and events flow there automatically
+  # Connect AKS to Log Analytics — all pod logs flow there
   oms_agent {
     log_analytics_workspace_id = azurerm_log_analytics_workspace.qsn.id
   }
 
-  # ---- NETWORK ----
   network_profile {
     network_plugin    = "azure"
     load_balancer_sku = "standard"
@@ -282,10 +245,8 @@ resource "azurerm_kubernetes_cluster" "qsn" {
   tags = local.common_tags
 }
 
-# ---- CONNECT AKS TO ACR ----
-# Give the AKS cluster permission to pull images from your
-# Container Registry without needing a username/password.
-# This is Managed Identity in action — secure, no credentials.
+# Give AKS permission to pull images from ACR
+# Managed Identity — no passwords, no credentials in code
 resource "azurerm_role_assignment" "aks_acr_pull" {
   principal_id                     = azurerm_kubernetes_cluster.qsn.kubelet_identity[0].object_id
   role_definition_name             = "AcrPull"
@@ -297,12 +258,12 @@ resource "azurerm_role_assignment" "aks_acr_pull" {
 # ============================================================
 # 6. MONITORING ALERTS — get notified when things break
 # ============================================================
-# This creates an alert that fires when your agent pods
-# have a high restart count — meaning they're crashing.
-# Azure sends an email to the ops team automatically.
+# Sends an email when your agent pods are crashing repeatedly.
+# Like a team physio getting an instant alert when a player
+# goes down — immediate awareness, immediate response.
 
 resource "azurerm_monitor_action_group" "qsn_alerts" {
-  name                = "ag-qsn-${var.client_name}-${local.suffix}"
+  name                = "ag-qsn-${var.league_name}-${local.suffix}"
   resource_group_name = azurerm_resource_group.qsn.name
   short_name          = "qsnalerts"
 

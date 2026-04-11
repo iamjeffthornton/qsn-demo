@@ -1,31 +1,42 @@
 # ============================================================
-# terraform.tfvars.example — Example values for each client
+# terraform.tfvars.example — Example values per rugby coverage
 # ============================================================
 # IMPORTANT:
 #   Copy this file to terraform.tfvars and fill in real values.
-#   terraform.tfvars is listed in .gitignore — it NEVER goes
-#   to GitHub because it contains your actual API key.
+#   terraform.tfvars is in .gitignore — it NEVER goes to GitHub
+#   because it contains your actual Anthropic API key.
 #
-#   This .example file IS safe to commit — it shows the
-#   structure without any real secrets.
+#   This .example file IS safe to commit to GitHub — it shows
+#   the structure without any real secrets inside it.
 # ============================================================
 
 
-# ---- FOR QUEENSLAND RAIL ----
-client_name       = "qrail"
+# ---- USA EAGLES / AMERICAS RUGBY COVERAGE ----
+league_name       = "usaeagles"
 environment       = "production"
-location          = "australiaeast"
+location          = "eastus"
 owner_name        = "Jeff Thornton"
 node_vm_size      = "Standard_D4s_v3"
 replica_count     = 3
 alert_email       = "jeff@jeffreythornton.com"
-anthropic_api_key = "sk-ant-YOUR-KEY-HERE"   # never commit real key!
+anthropic_api_key = "sk-ant-YOUR-KEY-HERE"    # never commit a real key!
 
 
-# ---- FOR US ENERGY CLIENT ----
-# client_name       = "usenergy"
+# ---- ALL BLACKS / SUPER RUGBY COVERAGE ----
+# league_name       = "allblacks"
 # environment       = "production"
-# location          = "eastus"
+# location          = "australiaeast"
+# owner_name        = "Jeff Thornton"
+# node_vm_size      = "Standard_D4s_v3"
+# replica_count     = 3
+# alert_email       = "jeff@jeffreythornton.com"
+# anthropic_api_key = "sk-ant-YOUR-KEY-HERE"
+
+
+# ---- SIX NATIONS / PREMIERSHIP COVERAGE ----
+# league_name       = "sixnations"
+# environment       = "production"
+# location          = "uksouth"
 # owner_name        = "Jeff Thornton"
 # node_vm_size      = "Standard_D4s_v3"
 # replica_count     = 5
@@ -33,8 +44,19 @@ anthropic_api_key = "sk-ant-YOUR-KEY-HERE"   # never commit real key!
 # anthropic_api_key = "sk-ant-YOUR-KEY-HERE"
 
 
-# ---- FOR LOCAL DEV / DEMO ----
-# client_name       = "demo"
+# ---- RUGBY WORLD CUP COVERAGE (high volume) ----
+# league_name       = "rugbywc"
+# environment       = "production"
+# location          = "francecentral"
+# owner_name        = "Jeff Thornton"
+# node_vm_size      = "Standard_D8s_v3"
+# replica_count     = 5
+# alert_email       = "jeff@jeffreythornton.com"
+# anthropic_api_key = "sk-ant-YOUR-KEY-HERE"
+
+
+# ---- LOCAL DEV / DEMO ----
+# league_name       = "qsndev"
 # environment       = "dev"
 # location          = "eastus"
 # owner_name        = "Jeff Thornton"
