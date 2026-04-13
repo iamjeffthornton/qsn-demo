@@ -286,7 +286,7 @@ def health_check():
                 self.end_headers()
         def log_message(self, *args): pass  # suppress HTTP logs
 
-    server = HTTPServer(("0.0.0.0", 8080), HealthHandler)
+    server = HTTPServer(("0.0.0.0", 8080), HealthHandler) # nosec B104
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     print("💚  Health check server running on :8080/health")
